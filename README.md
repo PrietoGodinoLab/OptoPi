@@ -8,5 +8,6 @@ illumination conditions with real time feedback.
 
 Our open-source software (BIO) can be used to simultaneously track multiple animals while accurately keeping individual animal’s identity both in on-line and off-line modes. 
 
-## Links
-See [BIO](https://github.com/folterj/BioImageOperation) for actively maintained BIO repository
+## BIO
+
+For animal tracking we utilise and recommend BIO created by Joost de Folter. Currently, we use the ' release. For the latest, actively maintained BIO repository see - [BIO](https://github.com/folterj/BioImageOperation).
