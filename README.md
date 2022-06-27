@@ -10,7 +10,7 @@ Our open-source software (BIO) can be used to simultaneously track multiple anim
 
 ## BIO
 
-For animal tracking we utilise and recommend BIO created by Joost de Folter. Currently, we use the [v1.7.6 release](https://github.com/folterj/BioImageOperation/releases/tag/v1.7.6). For the latest, actively maintained BIO repository see - [BIO](https://github.com/folterj/BioImageOperation).
+For animal tracking we utilise and recommend BIO created by Joost de Folter. Currently, we use the [v1.7.6 release](https://github.com/folterj/BioImageOperation/releases/tag/v1.7.6). For the latest, actively maintained BIO repository see [BIO](https://github.com/folterj/BioImageOperation).
 
 
 
