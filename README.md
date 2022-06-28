@@ -1,6 +1,6 @@
 # OptoPi
 
-### OptoPi Schematic
+### OptoPi Overview
 ![](https://github.com/PrietoGodinoLab/OptoPi/blob/master/OptoPi.gif)
 
 Here, we present OptoPi, an open source, affordable (~ £600), behavioural arena with accompanying multi-animal tracking software. The system features highly customisable and reproducible visible and infrared illumination and allows for temporally precise optogenetic stimulation. OptoPi acquires images using a Raspberry Pi camera, features motorised LED-based illumination, Arduino control, as well as spectrum and irradiance monitoring to fine-tune
