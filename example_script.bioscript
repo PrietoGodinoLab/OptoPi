@@ -1,0 +1,41 @@
+SetPath('working_directory')
+OpenVideo('input_video_name_relative_to_working_directory',interval=100)
+{
+	GrayScale()
+	AddSeries()
+}
+
+GetSeriesMedian()
+ShowImage()
+SaveImage('input_video_name_relative_to_working_directory_bg.png')
+
+back=OpenImage('input_video_name_relative_to_working_directory_bg.png')
+mask=OpenImage('input_video_name_relative_to_working_directory_mask.png')
+
+OpenVideo('input_video_name_relative_to_working_directory')
+{
+	StoreImage(original)
+	Grayscale()
+	//5:background=UpdateBackground(Weight=0.001)
+	DifferenceAbs(back)
+	Mask(mask)
+	Threshold(0.045)
+Dilate(1.5)
+	
+	CreateClusters(MinArea=30,MaxArea=80)//MinArea=35,MaxArea=100
+//CreateClusters(debug)
+	CreateTracks(MaxMove=1, MinActive=30, MaxInactive=300)
+
+//CreateTracks(MaxMove=1, MinActive=100, MaxInactive=200)
+
+	GetImage(original)
+	Color()
+	DrawClusters(DrawMode=Fill)
+	DrawTracks(DrawMode=Tracks|Label|Point)
+	ShowImage()
+ShowTrackInfo()
+
+ 
+SaveTracks('output_data_relative_to_working_directory.csv')
+SaveVideo('output_video_relative_to_working_directory.mp4', Fps=10)
+}

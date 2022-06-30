@@ -1,0 +1,11 @@
+SetPath('working_directory')
+OpenImage("check_pattern.png")
+OpticalCalibration(NX=10, NY=12)
+
+OpenVideo("video_path_relative_to_working_directory")
+{
+	ShowImage()
+	OpticalCorrection()
+	ShowImage(display=2)
+	SaveVideo("output_video_path_relative_to_working_directory")
+}
