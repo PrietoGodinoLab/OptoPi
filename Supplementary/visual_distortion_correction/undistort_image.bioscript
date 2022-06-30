@@ -1,0 +1,11 @@
+SetPath('working_directory')
+OpenImage("check_pattern.png")
+OpticalCalibration(NX=10, NY=12)
+
+OpenImage("check_pattern.png")
+{
+	ShowImage()
+	OpticalCorrection()
+	ShowImage(display=2)
+	SaveImage("check_pattern_undistorted.png")
+}
