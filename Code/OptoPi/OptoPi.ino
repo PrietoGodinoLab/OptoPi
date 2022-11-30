@@ -223,7 +223,7 @@ void loop()
    Settings();
 
    //RGB MATRICES STIMULATION
-   Set_Matrix_Color_Brightness(0, 0, 0, 0);
+   //Set_Matrix_Color_Brightness(0, 0, 0, 0);
 
    //Intensity ramp behaviural function
    //intensity_ramp(max_intensity,DELAY);
