@@ -2,12 +2,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_DotStarMatrix.h>
 #include <Adafruit_DotStar.h>
-#include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Servo.h>
 #include <elapsedMillis.h>
-#include <Adafruit_TSL2561_U.h>
-#include <Adafruit_AS7341.h>
 
 // Light stimulation Settings
 const byte red = 255;
@@ -24,9 +21,9 @@ bool blue_selected = false;
 
 elapsedMillis timeElapsed;
 // delay in milliseconds between blinks of the Matrices
-unsigned int DELAY = 1000;
+unsigned int DELAY = 5000;
 // delay befor starting the stimulation
-unsigned int DELAY_0 = 10000;
+unsigned int DELAY_0 = 0;
 bool state = LOW;
 unsigned long previousMillis;
 byte max_intensity = 255;
@@ -131,24 +128,11 @@ Servo servo6;
 Servo servo7; 
 //Servo servo8; 
 
-// TSL2561 Sensor motor configuration
-Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
+//Interrupt pins setup
 
-void configureSensor(void)
-{
-  /* You can also manually set the gain or enable auto-gain support */
-  // tsl.setGain(TSL2561_GAIN_1X);      /* No gain ... use in bright light to avoid sensor saturation */
-  // tsl.setGain(TSL2561_GAIN_16X);     /* 16x gain ... use in low light to boost sensitivity */
-  tsl.enableAutoRange(true);            /* Auto-gain ... switches automatically between 1x and 16x */
-  
-  /* Changing the integration time gives you better sensor resolution (402ms = 16-bit data) */
-  //tsl.setIntegrationTime(TSL2561_INTEGRATIONTIME_13MS);      /* fast but low resolution */
-  //tsl.setIntegrationTime(TSL2561_INTEGRATIONTIME_101MS);  /* medium resolution and speed   */
-  tsl.setIntegrationTime(TSL2561_INTEGRATIONTIME_402MS);  /* 16-bit data but slowest conversions */
-}
+int trig_1 = 21;
 
-// AS7341 object declaration
-Adafruit_AS7341 as7341;
+volatile bool state_trig = LOW;
 
 void setup() 
 {
@@ -190,16 +174,6 @@ void setup()
 
   matrix_4.begin();
 
-  // Configure the light intensity sensor
-  configureSensor();
-
-  // Initialize the AS7341 spectral sensor and settings
-  as7341.begin();
-
-  as7341.setATIME(100);
-  as7341.setASTEP(999);
-  as7341.setGain(AS7341_GAIN_256X);
-  
   //Check the values of the potentiometers preset and adjust once
   
   // CAMERA DISTANCE
@@ -210,45 +184,43 @@ void setup()
     
   // RGB MATRICES ANGLE
   RGB_matrices_angle();
+
+  // Interrupt pins setup
+  pinMode(trig_1, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(trig_1),change, CHANGE);
+
+  //Start with Brightnes 0 on the RGB matrices
+  Set_Matrix_Color_Brightness(red, green, blue, brightness_low);
+
 }
 
 
 
 void loop() 
 {
-   String command = Serial.readString();
-   while (command == "begin")
-   {
-   //Setting functions
-   Settings();
-
-   //RGB MATRICES STIMULATION
-   //Set_Matrix_Color_Brightness(0, 0, 0, 0);
-
-   //Intensity ramp behaviural function
-   //intensity_ramp(max_intensity,DELAY);
-  
-   //Blinking matrices behaviural function
-   //blinking(DELAY_0, DELAY);
-
-   //Read irradiance
-   //read_irradiance();
-   }
-
-   //Settings();
+      if (state_trig == HIGH) 
+        {
+          // RGB matrices set high color
+          Set_Matrix_Color_Brightness(red, green, blue, brightness);
+        } 
+      else 
+        {
+          // RGB matrices set low color
+          Set_Matrix_Color_Brightness(red, green, blue, brightness_low);
+        }
 }
 
 ////////////////////////////////////FUNCTIONS////////////////////////////////////////////////////////
 void Settings()
 {
-  //READ DISTANCE ULTRASONIC SENSOR 1(Bottom)
+  //  //READ DISTANCE ULTRASONIC SENSOR 1(Top)
   Read_distance_sensor_1();
-  
-  //READ DISTANCE ULTRASONIC SENSOR 2(Top)
+//  
+//  //READ DISTANCE ULTRASONIC SENSOR 2(Bottom)
   Read_distance_sensor_2();
-  
+//  
 //  // CAMERA DISTANCE
-  //Camera();
+  Camera();
 //  
 //  // IR ARRAYS ANGLE
   IR_Lights_angle();
@@ -307,11 +279,11 @@ void RGB_matrices_angle()
      
    //Send position to Servo 6
    angle_corrected_6 = angle_2 + offset_6;
-   servo5.write(angle_corrected_6);
+   servo6.write(angle_corrected_6);
 
    //Send position to Servo 7
    angle_corrected_7 = angle_2 + offset_7;
-   servo6.write(angle_corrected_7);
+   servo7.write(angle_corrected_7);
   }
 
 
@@ -319,10 +291,10 @@ void Camera()
   {
    pot2 = analogRead(A3);
    distance_camera = map(pot2, 0,1023,0,180);
-   servo7.write(distance_camera); 
+   servo5.write(distance_camera); 
   }
 
-void Read_distance_sensor_1() //Bottom sensor
+void Read_distance_sensor_1()
   {
     digitalWrite(trigPin, LOW);
     delayMicroseconds(5);
@@ -354,7 +326,7 @@ void Read_distance_sensor_1() //Bottom sensor
     average = total / numReadings;
   }
 
-void Read_distance_sensor_2() // Top sensor
+void Read_distance_sensor_2()
   {
     digitalWrite(trigPin_2, LOW);
     delayMicroseconds(5);
@@ -439,29 +411,6 @@ void Set_Matrix_Brightness()
      matrix_2.show();
   }
 
-  void read_irradiance()
-  {
-    sensors_event_t event;
-    tsl.getEvent(&event);
-    float lux = event.light;
-    if (red_selected == true)
-    {
-      float irradiance = 0.0034*lux - 0.0133;
-      Serial.println(irradiance);
-    }
-    if (green_selected == true)
-    {
-      float irradiance = 0.002*lux + 0.0874;
-      Serial.println(irradiance);
-    }
-    if (blue_selected == true)
-    {
-      float irradiance = 0.0022*lux + 0.0921;
-      Serial.println(irradiance);
-    }
-    
-  }
-
   void intensity_ramp(byte max_value,unsigned int interval)
   {
     byte i = 0;
@@ -485,6 +434,8 @@ void Set_Matrix_Brightness()
   
   // Print intensity 0
   Serial.println(state);
+//  Serial.print(" ");
+//  Serial.println(millis());
 
   while (currentMillis > interval_low)
   {
@@ -508,53 +459,20 @@ void Set_Matrix_Brightness()
           // RGB matrices set low color
           Set_Matrix_Color_Brightness(red, green, blue, brightness_low);
         }
-      Serial.println(state);
+        Serial.println(state);
+//        Serial.print(" ");
+//        Serial.println(millis());
       }  
-    Serial.println(state);
+      Serial.println(state);
+//      Serial.print(" ");
+//      Serial.println(millis());
     }
   }
 
-  void read_spectral_sensor()
+  void change()
   {
-    uint16_t readings[12];
-    float counts[12];
-
-    if (!as7341.readAllChannels(readings))
-    {
-      Serial.println("Error reading all channels!");
-      return;
-    }
-
-    for(uint8_t i = 0; i < 12; i++) 
-    {
-      if(i == 4 || i == 5) continue;
-      // we skip the first set of duplicate clear/NIR readings
-      // (indices 4 and 5)
-      counts[i] = as7341.toBasicCounts(readings[i]);
-    }
-
-  Serial.print("F1 415nm : ");
-  Serial.println(counts[0]);
-  Serial.print("F2 445nm : ");
-  Serial.println(counts[1]);
-  Serial.print("F3 480nm : ");
-  Serial.println(counts[2]);
-  Serial.print("F4 515nm : ");
-  Serial.println(counts[3]);
-  Serial.print("F5 555nm : ");
-  // again, we skip the duplicates  
-  Serial.println(counts[6]);
-  Serial.print("F6 590nm : ");
-  Serial.println(counts[7]);
-  Serial.print("F7 630nm : ");
-  Serial.println(counts[8]);
-  Serial.print("F8 680nm : ");
-  Serial.println(counts[9]);
-  Serial.print("Clear    : ");
-  Serial.println(counts[10]);
-  Serial.print("NIR      : ");
-  Serial.println(counts[11]);
-  Serial.println();
-  
-  delay(500);
+    state_trig = !state_trig;
   }
+  
+
+  
