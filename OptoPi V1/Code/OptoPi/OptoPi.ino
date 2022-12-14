@@ -459,17 +459,17 @@ void Set_Matrix_Brightness()
     float lux = event.light;
     if (red_selected == true)
     {
-      float irradiance = 0.0034*lux - 0.0638;
+      float irradiance = 0.0028*lux - 0.0623;
       Serial.println(irradiance);
     }
     if (green_selected == true)
     {
-      float irradiance = 0.0023*lux + 0.0116;
+      float irradiance = 0.0019*lux + 0.0155;
       Serial.println(irradiance);
     }
     if (blue_selected == true)
     {
-      float irradiance = 0.0021*lux + 0.0023;
+      float irradiance = 0.0017*lux + 0.0059;
       Serial.println(irradiance);
     }
     
